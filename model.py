@@ -109,5 +109,5 @@ print("Root Mean Squared Error:", rmse)
 print("R-squared:", r2)
 
 # Save the trained model
-with open('data/model.pkl', 'wb') as file:
+with open('data/trained/model.pkl', 'wb') as file:
     pickle.dump(pipeline, file)

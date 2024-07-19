@@ -164,4 +164,4 @@ cython_debug/
 #.idea/
 
 # Remove trained files
-data/trained/*
+# data/trained/*
