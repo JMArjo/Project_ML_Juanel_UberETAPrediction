@@ -4,19 +4,8 @@ import pickle
 import os
 import requests
 
-url = 'https://example.com/model.pkl'
-filename = 'data/trained/model.pkl'
-
-if not os.path.exists(filename):
-    response = requests.get(url)
-    with open(filename, 'wb') as f:
-        f.write(response.content)
-    print(f"{filename} downloaded successfully.")
-else:
-    print(f"{filename} already exists. Skipping download.")
-
 # Load the trained model
-with open(filename, 'rb') as file:
+with open('data/model.pkl', 'rb') as file:
     model = pickle.load(file)
 
 # Create the Streamlit app
