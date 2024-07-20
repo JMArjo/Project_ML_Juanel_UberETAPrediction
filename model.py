@@ -9,6 +9,10 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+from catboost import CatBoostRegressor
+
 import pickle
 
 from haversine import haversine, Unit
@@ -96,7 +100,6 @@ X = df.drop(['ID', 'Delivery_person_ID', 'Restaurant_latitude', 'Restaurant_long
 
 y = df['Time_taken']
 
-
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -113,30 +116,48 @@ preprocessor = ColumnTransformer(
         ('cat', categorical_transformer, categorical_features)
     ])
 
-# Create a random forest regressor
-rf = RandomForestRegressor(n_estimators=100, random_state=42)
+# Create a dictionary of models
+models = {
+    'Random Forest': RandomForestRegressor(n_estimators=100, random_state=42),
+    'XGBoost': XGBRegressor(n_estimators=100, random_state=42),
+    'LightGBM': LGBMRegressor(n_estimators=100, random_state=42),
+    'CatBoost': CatBoostRegressor(iterations=100, random_state=42, verbose=False)
+}
 
-# Create the pipeline
-pipeline = Pipeline(steps=[('preprocessor', preprocessor),
-                           ('regressor', rf)])
+# Create a dictionary to store the R-squared scores
+r2_scores = {}
 
-# Train the model
-pipeline.fit(X_train, y_train)
+# Iterate over the models
+for model_name, model in models.items():
+    # Create the pipeline
+    pipeline = Pipeline(steps=[('preprocessor', preprocessor),
+                               ('regressor', model)])
+    
+    # Train the model
+    pipeline.fit(X_train, y_train)
+    
+    # Make predictions on the test set
+    y_pred = pipeline.predict(X_test)
+    
+    # Calculate R-squared score
+    r2 = r2_score(y_test, y_pred)
+    r2_scores[model_name] = r2
+    
+    print(f"{model_name} R-squared: {r2}")
 
-# Make predictions on the test set
-y_pred = pipeline.predict(X_test)
+# Find the model with the highest R-squared score
+best_model_name = max(r2_scores, key=r2_scores.get)
+best_model = models[best_model_name]
 
-# Calculate evaluation metrics
-mae = mean_absolute_error(y_test, y_pred)
-mse = mean_squared_error(y_test, y_pred)
-rmse = np.sqrt(mse)
-r2 = r2_score(y_test, y_pred)
+print(f"\nBest model: {best_model_name}")
 
-print("Mean Absolute Error:", mae)
-print("Mean Squared Error:", mse)
-print("Root Mean Squared Error:", rmse)
-print("R-squared:", r2)
+# Create the pipeline with the best model
+best_pipeline = Pipeline(steps=[('preprocessor', preprocessor),
+                                ('regressor', best_model)])
+
+# Train the best model
+best_pipeline.fit(X_train, y_train)
 
 # Save the trained model
 with open('data/model.pkl', 'wb') as file:
-    pickle.dump(pipeline, file)
+    pickle.dump(best_pipeline, file)

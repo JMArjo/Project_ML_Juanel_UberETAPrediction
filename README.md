@@ -6,7 +6,7 @@ The goal of this project is to build a machine learning model to predict the tim
 
 - [Dataset](#dataset)
 - [Features](#features)
-- [Model](#model)
+- [Models](#models)
 - [Future Ideas](#future-ideas)
 - [License](#license)
 
@@ -37,18 +37,18 @@ The model consumes the following features for predicting delivery time:
 - Other factors: Delivery partner workload, age, and delivery person’s rating
 - Historical delivery time
 
-## Model
+## Models
 
-The model is built using a Random Forest Regressor. The data is preprocessed using a pipeline that includes scaling numeric features and one-hot encoding discrete features. 
+The model is built using a Random Forest Regressor, a Catboost Regressor, XGBoost Regressor and LightGBM Regressor.
 
-The model after trained is evaluated using the Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), and R-squared metrics.
+The data is preprocessed using a pipeline that includes scaling numeric features and one-hot encoding discrete features. 
+
+Each model, after trained, is evaluated using the R-squared metric to select the best model before deployment of the Pickle file. 
 
 ## Future Ideas
 
-- Train using other more advanced models
-- Test with other models and identify which offers better precission
 - Refactor to modularize and add some tests to improve QA
-- Introduce some hyperparameter tuning.
+- Introduce better hyperparameter tuning for each model.
 
 ## License
 

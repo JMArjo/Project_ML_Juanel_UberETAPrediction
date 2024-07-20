@@ -165,3 +165,8 @@ cython_debug/
 
 # Remove trained files
 # data/trained/*
+
+# Training files
+catboost_training.json
+*.tsv
+catboost_info/*
