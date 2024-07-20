@@ -11,8 +11,19 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 import pickle
 
+from haversine import haversine, Unit
+
 # Load the dataset
 df = pd.read_csv('data/train.csv')
+
+# Function to calculate haversine distance
+def calculate_distance(row):
+    restaurant_coords = (row['Restaurant_latitude'], row['Restaurant_longitude'])
+    delivery_coords = (row['Delivery_location_latitude'], row['Delivery_location_longitude'])
+    return haversine(restaurant_coords, delivery_coords, unit=Unit.KILOMETERS)
+
+# Calculate haversine distance
+df['Distance'] = df.apply(calculate_distance, axis=1)
 
 # Convert 'Delivery_person_Age' to numeric, replacing non-numeric values with NaN
 df['Delivery_person_Age'] = pd.to_numeric(df['Delivery_person_Age'], errors='coerce')
@@ -49,31 +60,49 @@ def clean_time(time_str):
         return None  # Handle any other parsing errors
 
 # Apply the cleaning function to the 'time' column
-df['Clean_Time_Orderd'] = df['Time_Orderd'].apply(clean_time)
+# df['Clean_Time_Orderd'] = df['Time_Orderd'].apply(clean_time)
 
-# Display the cleaned DataFrame
-# print(df)
+'''
+df['Pickup_Time'] = pd.to_datetime(df['Time_Order_picked'], format = '%H:%M:%S') - pd.to_datetime(df['Clean_Time_Orderd'], format = '%H:%M:%S')
+
+df['Pickup_Time'] = df['Pickup_Time'].dt.total_seconds() / 60
+df.drop(df[df['Pickup_Time'] < 0].index, inplace=True)
+
+df = df.dropna(subset=['Pickup_Time'])
+
+pickup_times = df['Pickup_Time'].unique()
+# print(f"Unique Pickup_Time values: {pickup_times}")
+'''
+
+# Perform one-hot encoding
+# df = pd.get_dummies(df, columns=['Pickup_Time'], prefix='Pickup')
 
 # Extract features from the datetime columns
-df['Order_Year'] = df['Order_Date'].dt.year
-df['Order_Month'] = df['Order_Date'].dt.month
-df['Order_Day'] = df['Order_Date'].dt.day
-df['Order_DayOfWeek'] = df['Order_Date'].dt.dayofweek
-df['Order_Hour'] = pd.to_datetime(df['Clean_Time_Orderd'], format='%H:%M:%S').dt.hour
+# df['Order_Year'] = df['Order_Date'].dt.year
+# df['Order_Month'] = df['Order_Date'].dt.month
+# df['Order_Day'] = df['Order_Date'].dt.day
+# df['Order_DayOfWeek'] = df['Order_Date'].dt.dayofweek
+# df['Order_Hour'] = pd.to_datetime(df['Clean_Time_Orderd'], format='%H:%M:%S').dt.hour
 
-# Drop the original date and time columns
-df.drop(columns=['Order_Date', 'Time_Orderd', 'Time_Order_picked'], inplace=True)
+order_types = df['Type_of_order'].unique()
+# print(f"Unique Type_of_order values: {order_types}")
+
+# df = pd.get_dummies(df, columns=['Type_of_order'], prefix="Order")
 
 # Split the data into features and target
-X = df.drop(['ID', 'Delivery_person_ID', 'Restaurant_latitude', 'Restaurant_longitude', 'Delivery_location_latitude', 'Delivery_location_longitude', 'Time_taken(min)', 'Time_taken'], axis=1)
+X = df.drop(['ID', 'Delivery_person_ID', 'Restaurant_latitude', 'Restaurant_longitude', 'Delivery_location_latitude', 
+             'Delivery_location_longitude', 'Order_Date', 'Time_taken(min)', 'Time_taken', 'Type_of_order', 'Time_Orderd', 'Time_Order_picked'], axis=1)
+# print(X)
+
 y = df['Time_taken']
+
 
 # Split the data into training and testing sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
 # Create a preprocessing pipeline
-numeric_features = ['Delivery_person_Age', 'Delivery_person_Ratings', 'multiple_deliveries', 'Order_Year', 'Order_Month', 'Order_Day', 'Order_DayOfWeek', 'Order_Hour']
-categorical_features = ['Weatherconditions', 'Road_traffic_density', 'Type_of_order', 'Type_of_vehicle', 'Festival', 'City']
+numeric_features = ['Delivery_person_Age', 'Delivery_person_Ratings', 'multiple_deliveries', 'Distance', 'Vehicle_condition']
+categorical_features = ['Weatherconditions', 'Road_traffic_density', 'Type_of_vehicle', 'Festival', 'City']
 
 numeric_transformer = StandardScaler()
 categorical_transformer = OneHotEncoder(handle_unknown='ignore')
