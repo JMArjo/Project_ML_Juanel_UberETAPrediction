@@ -28,24 +28,24 @@ The dataset used for this project includes the following columns:
 
 ## Features
 
-The model considers the following features for predicting delivery time:
+The model consumes the following features for predicting delivery time:
 
 - Distance between restaurant and delivery location
-- Historical delivery time
-- Extraneous factors: Weather conditions, road traffic density, city, and city type
+- Extraneous factors: Weather conditions, road traffic density and city type
 - Transportation: Vehicle condition, type of vehicle,
-- Time-based features: Time of the day, day of the week, festival day  
+- Time-based features: Wheter if its Festival day or not
 - Other factors: Delivery partner workload, age, and delivery person’s rating
+- Historical delivery time
 
 ## Model
 
 The model is built using a Random Forest Regressor. The data is preprocessed using a pipeline that includes scaling numeric features and one-hot encoding discrete features. 
 
-The model is trained and evaluated using the Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), and R-squared metrics.
+The model after trained is evaluated using the Mean Absolute Error (MAE), Mean Squared Error (MSE), Root Mean Squared Error (RMSE), and R-squared metrics.
 
 ## Future Ideas
 
-- Use more advanced models
+- Train using other more advanced models
 - Test with other models and identify which offers better precission
 - Refactor to modularize and add some tests to improve QA
 - Introduce some hyperparameter tuning.
